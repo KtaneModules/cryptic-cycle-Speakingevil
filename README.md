@@ -1,1 +1,1 @@
-# cryptic-cycle
+#[ModKit Wiki](../../wiki)
