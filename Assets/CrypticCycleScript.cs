@@ -23,7 +23,7 @@ public class CrypticCycleScript : MonoBehaviour
     public Material legible;
     public Font engalph;
 
-    private int rl
+    private int r;
     private string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!\"£$%^&*()[]{}<>";
     private string[] glyphset = new string[3] { "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz", "0123456789!\"£$%^&*()[]{}<>" };
     private string[] ciphset = new string[4] {  "GORIYSHQBFLPZATNKVCUJMDEXW", "VENJXDHPSCRGKBMQLYAFTWZIUO", "CMFOVGIANRQWBJDHTZEYKXULPS", "XASDTWRPUJZFYQGEILCKVOHNMB" };
