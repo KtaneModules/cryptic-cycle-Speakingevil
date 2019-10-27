@@ -23,6 +23,7 @@ public class CrypticCycleScript : MonoBehaviour
     public Material legible;
     public Font engalph;
 
+    private int rl
     private string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!\"£$%^&*()[]{}<>";
     private string[] glyphset = new string[3] { "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz", "0123456789!\"£$%^&*()[]{}<>" };
     private string[] ciphset = new string[4] {  "GORIYSHQBFLPZATNKVCUJMDEXW", "VENJXDHPSCRGKBMQLYAFTWZIUO", "CMFOVGIANRQWBJDHTZEYKXULPS", "XASDTWRPUJZFYQGEILCKVOHNMB" };
@@ -162,7 +163,7 @@ public class CrypticCycleScript : MonoBehaviour
             pressCount = 0;
             ansSet = 0;
             answer = string.Empty;
-            int r = Random.Range(0, 100);
+            r = Random.Range(0, 100);
             string[][] roh = new string[2][] { new string[8], new string[8]};
             List<string>[] ciph = new List<string>[] { new List<string> { }, new List<string> { } };
             List<string>[] log = new List<string>[2] { new List<string> { }, new List<string> { } };
