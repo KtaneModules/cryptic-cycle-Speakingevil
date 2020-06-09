@@ -54,6 +54,8 @@ public class CrypticCycleScript : MonoBehaviour
     private int pressCount;
     private int keyset;
     private bool switching;
+    private bool activated = false;
+    private bool finished = false;
     private bool moduleSolved;
 
     //Logging
@@ -68,6 +70,7 @@ public class CrypticCycleScript : MonoBehaviour
             int k = keys.IndexOf(key);
             key.OnInteract += delegate () { KeyPress(k); return false; };
         }
+        GetComponent<KMBombModule>().OnActivate += OnActivate;
     }
 
     void Start()
@@ -76,15 +79,19 @@ public class CrypticCycleScript : MonoBehaviour
         {
             store.enabled = false;
         }
+    }
+
+    void OnActivate()
+    {
         Reset();
     }
 
     private void KeyPress(int k)
     {
         keys[k].AddInteractionPunch(0.125f);
-        if (moduleSolved == false && switching == false)
+        if (moduleSolved == false && switching == false && activated == true)
         {
-            Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, transform);
+            Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, keys[k].transform);
             if (k == 26)
             {
                 if (pressCount > 0)
@@ -148,7 +155,7 @@ public class CrypticCycleScript : MonoBehaviour
                 {
                     GetComponent<KMBombModule>().HandleStrike();
                     disp.color = new Color32(255, 0, 0, 255);
-                    Debug.LogFormat("[Cryptic Cycle #{0}]The submitted response was {1} | {2}: Resetting", moduleID, string.Join(string.Empty, anslog), ansSet);
+                    Debug.LogFormat("[Cryptic Cycle #{0}] The submitted response was {1} | {2}: Resetting", moduleID, string.Join(string.Empty, anslog), ansSet);
                 }
                 Reset();
             }
@@ -287,16 +294,16 @@ public class CrypticCycleScript : MonoBehaviour
             ciphertext[1] = string.Join(string.Empty, ciph[1].ToArray());
             logtext[0] = string.Join(string.Empty, log[0].ToArray());
             logtext[1] = string.Join(string.Empty, log[1].ToArray());
-            Debug.LogFormat("[Cryptic Cycle #{0}]The encrypted message was {1}", moduleID, logtext[0]);
-            Debug.LogFormat("[Cryptic Cycle #{0}]The glyph sets were {1}", moduleID, string.Join(", ", logset));
-            Debug.LogFormat("[Cryptic Cycle #{0}]The dial bits were {1}", moduleID, string.Join(", ", roh[0]));
-            Debug.LogFormat("[Cryptic Cycle #{0}]The label bits were {1}", moduleID, string.Join(", ", roh[1]));
-            Debug.LogFormat("[Cryptic Cycle #{0}]The operators were {1}", moduleID, string.Join(", ", op));
-            Debug.LogFormat("[Cryptic Cycle #{0}]The {1} operator returned: {2}", moduleID, op[0], string.Join(", ", logilog[0]));
-            Debug.LogFormat("[Cryptic Cycle #{0}]The {1} operator returned: {2}", moduleID, op[1], string.Join(", ", logilog[1]));
-            Debug.LogFormat("[Cryptic Cycle #{0}]The deciphered message was {1}", moduleID, message[0][r]);
-            Debug.LogFormat("[Cryptic Cycle #{0}]The response word was {1}", moduleID, message[1][r]);
-            Debug.LogFormat("[Cryptic Cycle #{0}]The correct response was {1} | {2}", moduleID, logtext[1], string.Join(string.Empty, logset));
+            Debug.LogFormat("[Cryptic Cycle #{0}] The encrypted message was {1}", moduleID, logtext[0]);
+            Debug.LogFormat("[Cryptic Cycle #{0}] The glyph sets were {1}", moduleID, string.Join(", ", logset));
+            Debug.LogFormat("[Cryptic Cycle #{0}] The dial bits were {1}", moduleID, string.Join(", ", roh[0]));
+            Debug.LogFormat("[Cryptic Cycle #{0}] The label bits were {1}", moduleID, string.Join(", ", roh[1]));
+            Debug.LogFormat("[Cryptic Cycle #{0}] The operators were {1}", moduleID, string.Join(", ", op));
+            Debug.LogFormat("[Cryptic Cycle #{0}] The {1} operator returned: {2}", moduleID, op[0], string.Join(", ", logilog[0]));
+            Debug.LogFormat("[Cryptic Cycle #{0}] The {1} operator returned: {2}", moduleID, op[1], string.Join(", ", logilog[1]));
+            Debug.LogFormat("[Cryptic Cycle #{0}] The deciphered message was {1}", moduleID, message[0][r]);
+            Debug.LogFormat("[Cryptic Cycle #{0}] The response word was {1}", moduleID, message[1][r]);
+            Debug.LogFormat("[Cryptic Cycle #{0}] The correct response was {1} | {2}", moduleID, logtext[1], string.Join(string.Empty, logset));
         }
         StartCoroutine(DialSet());
     }
@@ -331,7 +338,7 @@ public class CrypticCycleScript : MonoBehaviour
                     if (set[j] == false)
                     {
                         set[j] = true;
-                        Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.BigButtonPress, transform);
+                        Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.BigButtonPress, dials[j].transform);
                         if (moduleSolved == false)
                         {
                             dialcanvas[j].transform.localEulerAngles = new Vector3(0, 0, labelrot[j] * 90);
@@ -420,6 +427,7 @@ public class CrypticCycleScript : MonoBehaviour
                     keytext.color = new Color32(255, 255, 255, 255);
                 }
             }
+            finished = true;
             Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.CorrectChime, transform);
             GetComponent<KMBombModule>().HandlePass();
         }
@@ -450,6 +458,8 @@ public class CrypticCycleScript : MonoBehaviour
         Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.WireSequenceMechanism, transform);
         yield return new WaitForSeconds(1f);
         switching = false;
+        if (!activated)
+            activated = true;
         foreach (KMSelectable key in keys)
         {
             int k = keys.IndexOf(key);
@@ -461,17 +471,20 @@ public class CrypticCycleScript : MonoBehaviour
             }
         }
     }
-#pragma warning disable 414
-    private string TwitchHelpMessage = "!{0} ABCDEFGH [Presses keys in the positions of the letters on a QWERTY keyboard] | !{0} left/right [Cycles between keyboards] | !{0} delete [Deletes last input] !{0} cancel [Deletes all inputs]";
-#pragma warning restore 414
+
+    #pragma warning disable 414
+    private string TwitchHelpMessage = "!{0} ABCDEFGH [Presses keys in the positions of the letters on a QWERTY keyboard] | !{0} left/right [Cycles between keyboards] | !{0} delete [Deletes last input] | !{0} cancel/clear [Deletes all inputs]";
+    #pragma warning restore 414
     IEnumerator ProcessTwitchCommand(string command)
     {
 
-        if (command.ToLowerInvariant() == "cancel")
+        if (command.ToLowerInvariant() == "cancel" || command.ToLowerInvariant() == "clear")
         {
-            for (int i = 0; i < 8; i++)
+            int times = pressCount;
+            for (int i = 0; i < times; i++)
             {
                 KeyPress(26);
+                yield return new WaitForSeconds(0.125f);
             }
             yield return null;
         }
@@ -504,7 +517,90 @@ public class CrypticCycleScript : MonoBehaviour
                 KeyPress("QWERTYUIOPASDFGHJKLZXCVBNM".IndexOf(letter));
                 yield return new WaitForSeconds(0.125f);
             }
+            int setcode = 0;
+            for (int i = 0; i < 8; i++)
+            {
+                setcode *= 10;
+                setcode += setpick[i] + 1;
+            }
+            if (pressCount == 8 && answer == ciphertext[1] && ansSet == setcode)
+            {
+                yield return "solve";
+            }
             yield return null;
         }
+    }
+
+    IEnumerator TwitchHandleForcedSolve()
+    {
+        while (switching || !activated) { yield return true; yield return new WaitForSeconds(0.1f); }
+        int setcode = 0;
+        for (int i = 0; i < pressCount; i++)
+        {
+            setcode *= 10;
+            setcode += setpick[i] + 1;
+        }
+        if (answer != ciphertext[1].Substring(0, pressCount) || ansSet != setcode)
+        {
+            yield return ProcessTwitchCommand("cancel");
+        }
+        int start = pressCount;
+        for (int i = start; i < 8; i++)
+        {
+            int keyind = 0;
+            for (int k = 0; k < 3; k++)
+            {
+                if (keyboards[k].Contains(ciphertext[1][i].ToString()))
+                {
+                    keyind = k;
+                    break;
+                }
+            }
+            if (keyset == 0 && keyind == 1)
+            {
+                keys[28].OnInteract();
+                while (switching) { yield return true; yield return new WaitForSeconds(0.1f); }
+            }
+            else if (keyset == 0 && keyind == 2)
+            {
+                keys[27].OnInteract();
+                while (switching) { yield return true; yield return new WaitForSeconds(0.1f); }
+            }
+            else if (keyset == 1 && keyind == 2)
+            {
+                keys[28].OnInteract();
+                while (switching) { yield return true; yield return new WaitForSeconds(0.1f); }
+            }
+            else if (keyset == 1 && keyind == 0)
+            {
+                keys[27].OnInteract();
+                while (switching) { yield return true; yield return new WaitForSeconds(0.1f); }
+            }
+            else if (keyset == 2 && keyind == 0)
+            {
+                keys[28].OnInteract();
+                while (switching) { yield return true; yield return new WaitForSeconds(0.1f); }
+            }
+            else if (keyset == 2 && keyind == 1)
+            {
+                keys[27].OnInteract();
+                while (switching) { yield return true; yield return new WaitForSeconds(0.1f); }
+            }
+            while (!keyboards[keyset].Contains(ciphertext[1][i].ToString()))
+            {
+                keys[28].OnInteract();
+                while (switching) { yield return true; yield return new WaitForSeconds(0.1f); }
+            }
+            for (int j = 0; j < 26; j++)
+            {
+                if (keyboards[keyset][j].ToString().Equals(ciphertext[1][i].ToString()))
+                {
+                    keys[j].OnInteract();
+                    yield return new WaitForSeconds(0.125f);
+                    break;
+                }
+            }
+        }
+        while (!finished) { yield return true; yield return new WaitForSeconds(0.1f); }
     }
 }
