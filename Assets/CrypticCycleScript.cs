@@ -484,7 +484,6 @@ public class CrypticCycleScript : MonoBehaviour
             for (int i = 0; i < times; i++)
             {
                 KeyPress(26);
-                yield return new WaitForSeconds(0.125f);
             }
             yield return null;
         }
