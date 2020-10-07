@@ -505,7 +505,7 @@ public class CrypticCycleScript : MonoBehaviour
         else
         {
             command = command.ToUpperInvariant();
-            var word = Regex.Match(command, @"^\s*([A-Z\-]+)\s*$");
+            var word = Regex.Match(command, @"^\s*([A-Z]+)\s*$");
             if (!word.Success)
             {
                 yield break;
